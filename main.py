@@ -152,6 +152,7 @@ def main() -> int:
         else:
             print("unknown error")
             return 1
+    print("successful")
 
     return 0
 
