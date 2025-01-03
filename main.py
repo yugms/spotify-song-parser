@@ -26,11 +26,11 @@ def check_file_format(content: str) -> bool:
 def main() -> int:
     '''main function'''
     # open and read the file
-    file_name: str = input("enter the path of the file you want to organize: ")
-    if not check_file_validity(file_name):
+    file_path: str = input("enter the path of the file you want to organize: ")
+    if not check_file_validity(file_path):
         return 1
 
-    file = open(file_name, 'r')
+    file = open(file_path, 'r')
     content = file.read()
     lines: list[str] = [line.strip() for line in content.split("\n") if not(line.isspace() or not line)] # remove empty lines
     file.close()
@@ -62,8 +62,8 @@ def main() -> int:
     spotify: spotipy.Spotify = api.create_spotify_api_handler(user_id, os.getenv("SPOTIFY_CLIENT_ID"), os.getenv("SPOTIFY_CLIENT_SECRET"), os.getenv("SPOTIFY_REDIRECT_URI"), SCOPES)
 
     # separate the file into sections
-    songs_list: list[str] = []
-    artists: list[str] = []
+    song_lines: list[str] = []
+    artist_lines: list[str] = []
     current_section: str = ""
 
     for line in lines:
@@ -73,32 +73,33 @@ def main() -> int:
             current_section = "Artists"
         else:
             if current_section == "Songs":
-                songs_list.append(line)
+                song_lines.append(line)
             elif current_section == "Artists":
-                artists.append(line)
+                artist_lines.append(line)
 
     # get the playlists of each song
-    songs: dict[str, list[str]] = {
+    song_assignments: dict[str, list[str]] = {
         "songs": []
     }
-    for s in songs_list:
-        processed_line: list[str] = s.split(" / ")
-        song: str = processed_line[0].strip()
-        playlist_line: list[str] = [p.strip() for p in processed_line[1].split()]
+    for song_line in song_lines:
+        split_line: list[str] = [piece.strip() for piece in song_line.split("/")]
+        song_name: str = split_line[0].strip()
+        playlist_line: list[str] = [playlist_name.strip() for playlist_name in split_line[1].split()]
         for playlist in playlist_line:
             if playlist != "!songs":
-                if playlist not in songs:
-                    songs[playlist] = []
-                songs[playlist].append(song)
+                if playlist not in song_assignments:
+                    song_assignments[playlist] = []
+                song_assignments[playlist].append(song_name)
+        del playlist
         if "!songs" not in playlist_line:
-            songs["songs"].append(song)
+            song_assignments["songs"].append(song_name)
 
     user_playlists_raw: list[dict] = spotify.current_user_playlists(limit=50)["items"] # type: ignore # same reason as last time
     user_playlists: dict[str, str] = {}
     for item in user_playlists_raw:
         user_playlists[item["name"]] = item["uri"]
 
-    for playlist, song in songs.items(): # type: ignore # i have no idea why its wrong or how to fix it and it works so
+    for playlist, songs in song_assignments.items():
         if playlist not in user_playlists:
             if playlist[0] == "+":
                 api.create_playlist(playlist, user_id, spotify)
@@ -115,7 +116,7 @@ def main() -> int:
                             playlist = input("enter the name of the changed playlist: ")
         elif playlist in user_playlists:
             track_uris: list[str] = []
-            for track in song:
+            for track in songs:
                 search_result: str | None = api.search_uri("track", track, spotify)
                 if search_result == None:
                     print(f"{track} either does not exist or the inputted search was too far from the original name. skipping track.")
