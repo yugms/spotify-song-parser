@@ -39,9 +39,9 @@
   <p align="center">
     add songs to/create spotify playlists with just a text file
     <br />
-    <a href="https://github.com/yugms/spotify-song-parser/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/yugms/spotify-song-parser/issues/new?assignees=&labels=&projects=&template=bug_report.md&title=">Report Bug</a>
     ·
-    <a href="https://github.com/yugms/spotify-song-parser/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/yugms/spotify-song-parser/issues/new?assignees=&labels=&projects=&template=feature_request.md&title=">Request Feature</a>
   </p>
 </div>
 
