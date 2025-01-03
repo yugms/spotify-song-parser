@@ -167,6 +167,3 @@ if __name__ == '__main__':
         print(f"error with spotify: {s}")
     except Exception as e:
         print(f"error: {e}")
-
-# TODO: find the top songs of each artist
-# TODO: add the top songs of each artist to the corresponding playlist
