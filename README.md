@@ -19,11 +19,13 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT license][license-shield]][license-url]
+<div align="center">
+    <a href="https://github.com/yugms/spotify-song-parser/graphs/contributors"><img src="https://img.shields.io/github/contributors/yugms/spotify-song-parser.svg?style=for-the-badge" alt="contributors badge"></a>
+    <a href="https://github.com/yugms/spotify-song-parser/network/members"><img src="https://img.shields.io/github/forks/yugms/spotify-song-parser.svg?style=for-the-badge" alt="forks badge"></a>
+    <a href="https://github.com/yugms/spotify-song-parser/stargazers"><img src="https://img.shields.io/github/stars/yugms/spotify-song-parser.svg?style=for-the-badge" alt="stars badge"></a>
+    <a href="https://github.com/yugms/spotify-song-parser/issues"><img src="https://img.shields.io/github/issues/yugms/spotify-song-parser.svg?style=for-the-badge" alt="issues badge"></a>
+    <a href="https://github.com/yugms/spotify-song-parser/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/yugms/spotify-song-parser.svg?style=for-the-badge" alt="license badge"></a>
+  </div>
 
 
 
@@ -244,17 +246,6 @@ Project Link: [https://github.com/yugms/spotify-song-parser](https://github.com/
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/yugms/spotify-song-parser.svg?style=for-the-badge
-[contributors-url]: https://github.com/yugms/spotify-song-parser/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/yugms/spotify-song-parser.svg?style=for-the-badge
-[forks-url]: https://github.com/yugms/spotify-song-parser/network/members
-[stars-shield]: https://img.shields.io/github/stars/yugms/spotify-song-parser.svg?style=for-the-badge
-[stars-url]: https://github.com/yugms/spotify-song-parser/stargazers
-[issues-shield]: https://img.shields.io/github/issues/yugms/spotify-song-parser.svg?style=for-the-badge
-[issues-url]: https://github.com/yugms/spotify-song-parser/issues
-[license-shield]: https://img.shields.io/github/license/yugms/spotify-song-parser.svg?style=for-the-badge
-[license-url]: https://github.com/yugms/spotify-song-parser/blob/master/LICENSE.txt
-[product-screenshot]: images/screenshot.png
 
 [Python]: https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=306998
 [Python-url]:  https://www.python.org/
