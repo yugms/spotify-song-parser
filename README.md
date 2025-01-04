@@ -177,11 +177,13 @@ If everything works hunky-dory, it should print out text saying `success`. You a
 <!-- ROADMAP -->
 ## Roadmap
 
+- [ ] MOST IMPORTANT: Migrate to directly handling spotify API to replace spotipy
 - [ ] Add more features regarding the "main" playlist
   - [ ] Allow for no main playlist
   - [ ] Allow for custom main playlist names
 - [ ] Enable multi-word playlists
 - [ ] Add top songs of each artist to playlists
+- [ ] Connect user caches to a database for more security and easier to manage files
 
 See the [open issues](https://github.com/yugms/spotify-song-parser/issues) for a full list of proposed features (and known issues).
 
