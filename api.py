@@ -21,10 +21,10 @@ def add_item_to_playlist(tracks: list[str], playlist: str, user_id: str, sp: Spo
 
 def search_uri(type: str, query: str, spotify: Spotify) -> str | None:
     '''search spotify for whatever the user wants and returns uri'''
-    result = spotify.search(query, 1, 0, type, "ES")
-    return result[type]["items"][0]["uri"] if result != None else None
+    result = spotify.search("query", 10, 0, type, "ES")
+    return result[f"{type}s"]["items"][0]["uri"] if result != None else None
 
-def create_spotify_api_handler(user_id:str, client_id: str|None, client_secret: str|None, redirect_uri: str, scopes: list[str]) -> Spotify:
+def create_spotify_api_handler(user_id:str, client_id: str|None, client_secret: str|None, redirect_uri: str|None, scopes: list[str]) -> Spotify:
     '''creates and returns a spotify object using spotify authorization code'''
     auth_manager: SpotifyOAuth = SpotifyOAuth(client_id, client_secret, redirect_uri, None, scopes, ".cache-" + user_id)
     return Spotify(auth_manager=auth_manager)
