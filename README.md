@@ -8,7 +8,7 @@
 *** Thanks again! Now go create something AMAZING! :D
 -->
 
-
+# *IMPORTANT*: Currently, this project does not work due to a rework in Spotify's API that causes spotipy to no longer search correctly, among other things. I am currently working to migrate to directly using Spotify's API to avoid further incidences
 
 <!-- PROJECT SHIELDS -->
 <!--
