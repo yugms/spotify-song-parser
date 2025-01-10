@@ -1,4 +1,4 @@
-import os, spotipy, webbrowser
+import os, webbrowser
 from dotenv import load_dotenv
 # custom files
 import api
@@ -94,7 +94,7 @@ def main() -> int:
         if "!songs" not in playlist_line:
             song_assignments["songs"].append(song_name)
 
-    user_playlists_raw: list[dict] = spotify.current_user_playlists(limit=50)["items"] # type: ignore # same reason as last time
+    user_playlists_raw: list[dict] = spotify.current_user_playlists(limit=50)["items"]
     user_playlists: dict[str, str] = {}
     for item in user_playlists_raw:
         user_playlists[item["name"]] = item["uri"]

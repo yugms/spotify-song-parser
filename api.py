@@ -1,14 +1,14 @@
-import urllib.parse as parse, base64, requests, secrets, webbrowser, platformdirs, json, time, os, dotenv, cryptocode, sys; from typing import Any
+import urllib.parse as parse, base64, requests, secrets, webbrowser, platformdirs, json, time, os, dotenv, cryptocode, sys # type: ignore
 
 class Spotify:
     """
     Object to handle the Spotify API. Supply a user id, client id, client secret, redirect uri, scope(s), and whether you want to auto authenticate (authenticate and authorize spotify after initiating class or do it with the "spotify" function)
     """
-    def __init__(self, user_id: str, client_id: str | None, client_secret: str | None, redirect_uri: str | None, scopes: list[str], auto_authenticate: bool = True) -> None:
+    def __init__(self, user_id: str, client_id: str, client_secret: str, redirect_uri: str, scopes: list[str], auto_authenticate: bool = True) -> None:
         self.user_id: str = user_id
-        self.client_id: str | None  = client_id
-        self.client_secret: str | None = client_secret
-        self.redirect_uri: str | None = redirect_uri
+        self.client_id: str  = client_id
+        self.client_secret: str = client_secret
+        self.redirect_uri: str = redirect_uri
         self.scope: str = ' '.join(scopes)
         self.absent_credentials: bool = False
         self.access_token: str = ""
@@ -53,7 +53,7 @@ class Spotify:
             return content["access_token"] # type: ignore # idk im tired
         return "fail: cached token invalid"
 
-    def cache_data(self, data: Any) -> None:
+    def cache_data(self, data: dict) -> None:
         for item in self.DATA_TO_ENCRYPT: data[item] = cryptocode.encrypt(data[item], self.user_id)
         with open(self.CACHE_FILE_PATH, "w") as file:
             file.write(json.dumps(data))
@@ -82,7 +82,7 @@ class Spotify:
         else: print("authentication failed for unknown reason"); return "authentication fail: unknown reason"
         return authorization_code
 
-    def authorize_spotify(self, authorization_code: str) -> list[str | dict[str, str | float]]:
+    def authorize_spotify(self, authorization_code: str) -> list[str | dict]:
         if not authorization_code: return ["authorization fail: no authorization code present"]
         access_token_results: requests.Response = \
         requests.post(
@@ -102,7 +102,7 @@ class Spotify:
 
         print("authorization successful. caching token...")
 
-        new_cache_contents: dict[str, str | float] = access_token_results.json()
+        new_cache_contents: dict = access_token_results.json()
         new_cache_contents.update({
             "timestamp": time.time()
         })
@@ -117,12 +117,12 @@ class Spotify:
         # * authenticates spotify
         authentication_result: str = self.authenticate_spotify()
         if "fail" in authentication_result: return authentication_result
-        authorization_result: list[str | dict[str, str | float]] = self.authorize_spotify(authentication_result)
-        access_token: str | dict[str, str | float] = authorization_result[0]
+        authorization_result: list = self.authorize_spotify(authentication_result)
+        access_token: str = authorization_result[0]
         if "authorization fail" in access_token: print(access_token)
         if len(authorization_result) > 1:
             self.cache_data(authorization_result[1])
-        return access_token # type: ignore
+        return access_token
 
 def parse_user_id(raw_input: str) -> str:
     '''parse a spotify user link or uri to get the user id'''
