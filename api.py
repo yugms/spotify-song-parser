@@ -1,4 +1,4 @@
-import urllib.parse as parse, base64, requests, secrets, webbrowser, platformdirs, json, time, os, dotenv, cryptocode, sys # type: ignore
+import urllib.parse as parse, base64, requests, secrets, webbrowser, platformdirs, json, time, os, cryptocode, sys
 
 class Spotify:
     """
@@ -11,10 +11,10 @@ class Spotify:
         self.redirect_uri: str = redirect_uri
         self.scope: str = ' '.join(scopes)
         self.absent_credentials: bool = False
-        self.access_token: str = ""
         self.basic_auth: str = f"Basic {base64.b64encode(f'{client_id}:{client_secret}'.encode()).decode()}"
         self.authentication_url: str = "https://accounts.spotify.com/authorize"
         self.authorization_url: str = "https://accounts.spotify.com/api/token"
+        self.api_url: str = "https://api.spotify.com/v1"
 
         # * check to make sure client id, client secret, and redirect uri exist
         if not self.client_id or not self.client_id.strip():
@@ -39,7 +39,8 @@ class Spotify:
         # authenticate spotify
         authentication_results = self.spotify()
         if "fail" in authentication_results: sys.exit("exiting program: authentication/authorization fail")
-        self.access_token = authentication_results
+        self.access_token: str = authentication_results
+        self.playlists: dict[str, str] = self.__get_playlists()
 
     def get_cached_data(self) -> str:
         if not os.path.exists(self.CACHE_FILE_PATH): return "fail: cache file for user does not exist"
@@ -68,7 +69,10 @@ class Spotify:
             "scope": self.scope
         })
         print("opening browser to authenticate spotify. please authenticate this app. once authenticated, copy the link you were redirected to and enter it below.")
-        webbrowser.open(auth_url)
+        try:
+            webbrowser.open(auth_url)
+        except:
+            print(f"error while opening browser. please manually navigate to the link below:\n{auth_url}")
         authorized_url: str = input("please input the link you were redirected to: ")
         authorization_result: dict[str, list[str]] = parse.parse_qs(parse.urlparse(authorized_url).query)
         if "error" in authorization_result:
@@ -108,21 +112,132 @@ class Spotify:
         })
 
         return [access_token, new_cache_contents]
-    def spotify(self) -> str:
+
+    def spotify(self, check_cache:bool=True) -> str:
         # * check if cached token exists, and if it does, retrieve it
-        cache_results: str = self.get_cached_data()
-        if "fail" not in cache_results:
-            return cache_results
-        else: print(f"{cache_results.split(": ")[1]}. re-authenticating")
+        if check_cache:
+            cache_results: str = self.get_cached_data()
+            if "fail" not in cache_results:
+                return cache_results
+            else: print(f"{cache_results.split(": ")[1]}. re-authenticating")
         # * authenticates spotify
         authentication_result: str = self.authenticate_spotify()
-        if "fail" in authentication_result: return authentication_result
+        if "fail" in authentication_result: sys.exit(authentication_result)
         authorization_result: list = self.authorize_spotify(authentication_result)
         access_token: str = authorization_result[0]
-        if "authorization fail" in access_token: print(access_token)
+        if "authorization fail" in access_token: sys.exit(access_token)
         if len(authorization_result) > 1:
             self.cache_data(authorization_result[1])
         return access_token
+
+    def search(self, query: str, type: str) -> str | None:
+        url: str = self.api_url + "/search"
+        response: requests.Response = requests.get(
+            url=url,
+            params={
+                "q": query,
+                "type": type,
+                "market": "ES"
+            }, headers={
+                "Authorization": f"Bearer {self.access_token}"
+            }
+        )
+        if response.status_code == 401:
+            print("access token expired. re-authenticating...")
+            self.access_token = self.spotify(check_cache=False)
+            response = requests.get(
+                url=url,
+                params={
+                    "q": query,
+                    "type": type,
+                    "market": "ES",
+                    "offset": 0
+                }, headers={
+                    "Authorization": f"Bearer {self.access_token}"
+                }
+            )
+        if response.status_code != 200: sys.exit("unknown error happened.")
+
+        data: dict = response.json()
+        uri: str | None
+        try:
+            uri = data[f"{type}s"]["items"][0]["uri"]
+        except:
+            uri = None
+        return uri
+
+    def __get_playlists(self) -> dict[str, str]:
+        url = self.api_url + "/me/playlists"
+        response: requests.Response = requests.get(url=url, params={"limit": 50,}, headers={"Authorization": f"Bearer {self.access_token}"})
+        if response.status_code == 401:
+            print("access token expired. re-authenticating...")
+            self.access_token = self.spotify(check_cache=False)
+            response = requests.get(url=url, params={"limit": 50,}, headers={"Authorization": f"Bearer {self.access_token}"})
+        if response.status_code != 200: sys.exit("unknown error happened.")
+
+        data: dict = response.json()
+        return {item["name"]: item["uri"] for item in data["items"]}
+
+    def add_track_to_playlist(self, track_uris: list[str], playlist_uri: str) -> None:
+        playlist_id: str = playlist_uri.split(":")[-1]
+        tracks = [track.strip() for track in track_uris]
+        url: str = self.api_url + f"/playlists/{playlist_id}/tracks"
+        response: requests.Response = requests.post(
+            url=url,
+            json={
+                "position": 0,
+                "uris": tracks
+            }, headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.access_token}"
+            }
+        )
+        if response.status_code == 401:
+            print("access token expired. re-authenticating...")
+            self.access_token = self.spotify(check_cache=False)
+            response = requests.post(
+                url=url,
+                json={
+                    "position": 0,
+                    "uris": tracks
+                }, headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {self.access_token}"
+                }
+            )
+        if response.status_code != 201: sys.exit("unknown error occurred")
+
+    def create_playlist(self, playlist_name: str) -> dict[str, str]:
+        url: str = self.api_url + f"/users/{self.user_id}/playlists"
+        response: requests.Response = requests.post(
+            url=url,
+            json={
+                "name": playlist_name,
+                "description": f"playlist named {playlist_name}"
+            }, headers={
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json"
+            }
+        )
+
+        if response.status_code == 401:
+            print("access token expired. re-authenticating...")
+            self.access_token = self.spotify(check_cache=False)
+            response = requests.post(
+                url=url,
+                json={
+                    "name": playlist_name,
+                    "description": f"playlist named {playlist_name}"
+                }, headers={
+                    "Authorization": f"Bearer {self.access_token}",
+                    "Content-Type": "application/json"
+                }
+            )
+        if response.status_code != 201: sys.exit("unknown error occurred")
+
+        data: dict = response.json()
+        return {data["name"]: data["uri"]}
+
 
 def parse_user_id(raw_input: str) -> str:
     '''parse a spotify user link or uri to get the user id'''
@@ -133,15 +248,3 @@ def parse_user_id(raw_input: str) -> str:
         user_id = raw_input.split(":")[-1]
     else: user_id = raw_input
     return user_id
-
-dotenv.load_dotenv()
-spotify = Spotify(
-    "31wuo5slsvqcv6hnox2zjxyrahqe",
-    os.getenv("SPOTIFY_CLIENT_ID"),
-    os.getenv("SPOTIFY_CLIENT_SECRET"),
-    os.getenv("SPOTIFY_REDIRECT_URI"),
-    [
-        "playlist-modify-public", "playlist-modify-private", # needed to add songs to a playlist
-        "playlist-read-private", "playlist-read-collaborative", # needed to read the playlists of the user
-    ]
-)

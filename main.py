@@ -1,4 +1,4 @@
-import os, webbrowser
+import os
 from dotenv import load_dotenv
 # custom files
 import api
@@ -59,7 +59,13 @@ def main() -> int:
 
     print("enter the link or uri to your spotify account (go to your profile, right click on your name, and select copy spotify uri or copy link to profile) - this is needed for your spotify account id:")
     user_id: str = api.parse_user_id(input())
-    spotify: spotipy.Spotify = api.create_spotify_api_handler(user_id, os.getenv("SPOTIFY_CLIENT_ID"), os.getenv("SPOTIFY_CLIENT_SECRET"), os.getenv("SPOTIFY_REDIRECT_URI"), SCOPES)
+    spotify = api.Spotify(
+        user_id=user_id,
+        client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+        client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
+        redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
+        scopes=SCOPES
+    )
 
     # separate the file into sections
     song_lines: list[str] = []
@@ -94,36 +100,30 @@ def main() -> int:
         if "!songs" not in playlist_line:
             song_assignments["songs"].append(song_name)
 
-    user_playlists_raw: list[dict] = spotify.current_user_playlists(limit=50)["items"]
-    user_playlists: dict[str, str] = {}
-    for item in user_playlists_raw:
-        user_playlists[item["name"]] = item["uri"]
-
     for playlist, songs in song_assignments.items():
-        if playlist not in user_playlists:
+        if playlist not in spotify.playlists:
             if playlist[0] == "+":
-                api.create_playlist(playlist, user_id, spotify)
+                spotify.create_playlist(playlist)
             else:
-                while playlist not in user_playlists:
+                while playlist not in spotify.playlists:
                     match input(f"playlist {playlist} does not exist and is not marked to be created. do you want to create it, skip it, or change that playlist to another playlist? (1, 2, 3)"):
                         case 1:
-                            api.create_playlist(playlist, user_id, spotify)
-                            user_playlists.append(playlist)
+                            playlist_data: dict[str, str] = spotify.create_playlist(playlist)
+                            spotify.playlists.update(playlist_data)
                             break
                         case 2:
                             continue
                         case 3:
                             playlist = input("enter the name of the changed playlist: ")
-        elif playlist in user_playlists:
+        elif playlist in spotify.playlists:
             track_uris: list[str] = []
             for track in songs:
-                search_result: str | None = api.search_uri("track", track, spotify)
+                search_result: str | None = spotify.search(track, "track")
                 if search_result == None:
                     print(f"{track} either does not exist or the inputted search was too far from the original name. skipping track.")
                     continue
-                track_uris.append(search_result) # type: ignore # i handle this already
-            playlist_uri = user_playlists[playlist]
-            api.add_item_to_playlist(track_uris, playlist_uri, user_id, spotify)
+                track_uris.append(search_result)
+            spotify.add_track_to_playlist(track_uris, spotify.playlists[playlist])
         else:
             print("unknown error")
             return 1
@@ -138,7 +138,3 @@ if __name__ == '__main__':
             print("an error occurred")
     except KeyboardInterrupt:
         print("\nexiting program...")
-    except spotipy.SpotifyException as s:
-        print(f"error with spotify: {s}")
-    except Exception as e:
-        print(f"error: {e}")
