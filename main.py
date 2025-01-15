@@ -123,7 +123,7 @@ def main() -> int:
                     print(f"{track} either does not exist or the inputted search was too far from the original name. skipping track.")
                     continue
                 track_uris.append(search_result)
-            spotify.add_track_to_playlist(track_uris, spotify.playlists[playlist])
+            spotify.add_track_to_playlist(track_uris, spotify.playlists[playlist], playlist)
         else:
             print("unknown error")
             return 1

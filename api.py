@@ -178,7 +178,7 @@ class Spotify:
         data: dict = response.json()
         return {item["name"]: item["uri"] for item in data["items"]}
 
-    def add_track_to_playlist(self, track_uris: list[str], playlist_uri: str) -> None:
+    def add_track_to_playlist(self, track_uris: list[str], playlist_uri: str, playlist: str) -> None:
         playlist_id: str = playlist_uri.split(":")[-1]
         tracks = [track.strip() for track in track_uris]
         url: str = self.api_url + f"/playlists/{playlist_id}/tracks"
@@ -206,6 +206,7 @@ class Spotify:
                 }
             )
         if response.status_code != 201: sys.exit("unknown error occurred")
+        print(f"added tracks:\n{'\n'.join(track_uris)}\nto playlist: {playlist}")
 
     def create_playlist(self, playlist_name: str) -> dict[str, str]:
         url: str = self.api_url + f"/users/{self.user_id}/playlists"
