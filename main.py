@@ -1,4 +1,4 @@
-import os
+import os, sys
 from dotenv import load_dotenv
 # custom files
 import api
@@ -26,7 +26,10 @@ def check_file_format(content: str) -> bool:
 def main() -> int:
     '''main function'''
     # open and read the file
-    file_path: str = input("enter the path of the file you want to organize: ")
+    if len(sys.argv) > 1:
+        file_path: str = sys.argv[1]
+    else:
+        file_path: str = input("enter the path of the file you want to organize: ")
     if not check_file_validity(file_path):
         return 1
 
@@ -133,8 +136,6 @@ def main() -> int:
 
 if __name__ == '__main__':
     try:
-        response = main()
-        if response != 0:
-            print("an error occurred")
+        main()
     except KeyboardInterrupt:
         print("\nexiting program...")
