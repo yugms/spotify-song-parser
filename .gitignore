@@ -1,0 +1,10 @@
+# virtual env
+venv/
+# mypy cache
+.mypy_cache/
+# environment variables
+.env
+# mypy config
+mypy.ini
+# python cache
+__pycache__/
