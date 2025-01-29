@@ -6,7 +6,7 @@
 *** or simply open an issue with the tag "enhancement".
 *** Don't forget to give the project a star!
 *** Thanks again! Now go create something AMAZING! :D
---> 
+-->
 
 <!-- PROJECT SHIELDS -->
 <!--
@@ -80,15 +80,14 @@
 
 ![example of program](./images/program-example.png)
 
-This program takes a text file (more info about formatting in the [tutorial section](#tutorial)) and adds songs to the playlists you specified. I made this because I sometimes don't have access to data so I can just write this text file, and when I have internet I can run the code and easily get my songs added to my playlists. The [test files](./test-files/) are used for testing to make sure the program still works after testing. The project uses spotipy to authenticate and handle the spotify api.
+This program takes a text file (more info about formatting in the [tutorial section](#tutorial)) and adds songs to the playlists you specified. I made this because I sometimes don't have access to data so I can just write this text file, and when I have internet I can run the code and easily get my songs added to my playlists. The [test files](./test-files/) are used for testing to make sure the program still works after testing. The project uses the spotify web api.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
 
 * [![Python]][Python-url]
-* [![Spotipy]][Spotipy-url]
-* [![Spotify]][Spotify-url]
+* [![Spotify Web API]][Spotify-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -145,7 +144,7 @@ Songs:
 Artists:
   <artist> / playlist1 playlist2 playlist3... !main_playlist (if you don't want that song to be in the main playlist)
 ```
-Currently you cannot disable not having a main playlist and the main playlist name must be "songs"
+Currently you cannot disable not having a main playlist (basically a playlist with all of your songs) and the main playlist name must be "songs"
 
 You also do not need to have 3 playlists per song, it can only be one if you want.
 
@@ -175,13 +174,12 @@ If everything works hunky-dory, it should print out text saying `success`. You a
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] MOST IMPORTANT: Migrate to directly handling spotify API to replace spotipy
+- [X] Migrate to directly handling spotify API to replace spotipy
 - [ ] Add more features regarding the "main" playlist
-  - [ ] Allow for no main playlist
-  - [ ] Allow for custom main playlist names
-- [ ] Enable multi-word playlists
+  - [ ] Allow for no "main playlist"
+  - [ ] Allow for custom "main playlist" names
+- [ ] Fix multi-word playlists not working
 - [ ] Add top songs of each artist to playlists
-- [ ] Connect user caches to a database for more security and easier to manage files
 
 See the [open issues](https://github.com/yugms/spotify-song-parser/issues) for a full list of proposed features (and known issues).
 
