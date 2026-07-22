@@ -100,6 +100,7 @@ def main() -> int:
 
     for playlist, songs in song_assignments.items():
         if not songs:
+            print(f"no tracks to add to playlist {playlist}, skipping")
             continue
         if playlist not in spotify.playlists:
             if playlist[0] == "+":
