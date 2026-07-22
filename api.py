@@ -1,4 +1,4 @@
-import urllib.parse as parse, base64, requests, secrets, webbrowser, platformdirs, json, time, os, cryptocode, sys
+import urllib.parse as parse, base64, requests, secrets, webbrowser, platformdirs, json, time, os, cryptocode, sys, http.server
 
 class Spotify:
     """
@@ -35,7 +35,8 @@ class Spotify:
 
         self.DATA_TO_ENCRYPT = ["access_token", "refresh_token"]
 
-        if not auto_authenticate: return
+        if not auto_authenticate:
+            return
         # authenticate spotify
         authentication_results = self.spotify()
         if "fail" in authentication_results: sys.exit("exiting program: authentication/authorization fail")
@@ -59,6 +60,36 @@ class Spotify:
         with open(self.CACHE_FILE_PATH, "w") as file:
             file.write(json.dumps(data))
 
+    def capture_authentication(self) -> dict[str, list[str]]:
+        parsed = parse.urlparse(self.redirect_uri)
+        host = parsed.hostname
+        port = parsed.port
+        expected_path = parsed.path
+        captured_data: dict[str, list[str]] = {}
+
+        class RequestHandler(http.server.BaseHTTPRequestHandler):
+            def __init__(self, request, client_address, server) -> None:
+                super().__init__(request, client_address, server)
+            def do_GET(self):
+                url = parse.urlparse(self.path)
+                if url.path != expected_path:
+                    self.send_response(404)
+                    self.end_headers()
+                    return
+                captured_data.update(parse.parse_qs(url.query))
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html")
+                self.end_headers()
+                self.wfile.write(b"<h2>You can close the tab now and return back to the application</h2>")
+            def log_message(self, format: str, *args: Any) -> None:
+                pass
+
+        server = http.server.HTTPServer((host, port), RequestHandler)
+        while not captured_data:
+            server.handle_request()
+        server.server_close()
+        return captured_data
+
     def authenticate_spotify(self) -> str:
         state: str = secrets.token_urlsafe(16) # state to ensure proper authentication
         auth_url: str = self.authentication_url + "?" + parse.urlencode({
@@ -68,13 +99,20 @@ class Spotify:
             "state": state,
             "scope": self.scope
         })
-        print("opening browser to authenticate spotify. please authenticate this app. once authenticated, copy the link you were redirected to and enter it below.")
+        print("opening browser to authenticate spotify. please authenticate this app.")
         try:
             webbrowser.open(auth_url)
         except:
             print(f"error while opening browser. please manually navigate to the link below:\n{auth_url}")
-        authorized_url: str = input("please input the link you were redirected to: ")
-        authorization_result: dict[str, list[str]] = parse.parse_qs(parse.urlparse(authorized_url).query)
+
+        authorization_result: dict[str, list[str]]
+
+        try:
+            authorization_result = self.capture_authentication()
+        except OSError:
+            print("could not start local callback server. fallback to manual paste")
+            authorized_url: str = input("please input the link you were redirected to: ")
+            authorization_result = parse.parse_qs(parse.urlparse(authorized_url).query)
         if "error" in authorization_result:
             print(f"error in authenticating: {authorization_result["error"][0]}")
             return f"authentication fail: {authorization_result['error'][0]}"
