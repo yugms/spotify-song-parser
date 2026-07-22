@@ -88,23 +88,19 @@ def main() -> int:
                 artist_lines.append(line)
 
     # get the playlists of each song
-    song_assignments: dict[str, list[str]] = {
-        "songs": []
-    }
+    song_assignments: dict[str, list[str]] = {}
     for song_line in song_lines:
         split_line: list[str] = [piece.strip() for piece in song_line.split("/")]
         song_name: str = split_line[0].strip()
         playlist_line: list[str] = [playlist_name.strip() for playlist_name in split_line[1].split(",")]
         for playlist in playlist_line:
-            if playlist != "!songs":
-                if playlist not in song_assignments:
-                    song_assignments[playlist] = []
-                song_assignments[playlist].append(song_name)
-        del playlist
-        if "!songs" not in playlist_line:
-            song_assignments["songs"].append(song_name)
+            if playlist not in song_assignments:
+                song_assignments[playlist] = []
+            song_assignments[playlist].append(song_name)
 
     for playlist, songs in song_assignments.items():
+        if not songs:
+            continue
         if playlist not in spotify.playlists:
             if playlist[0] == "+":
                 spotify.create_playlist(playlist)
