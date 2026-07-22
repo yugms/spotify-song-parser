@@ -26,10 +26,11 @@ def check_file_format(content: str) -> bool:
 def main() -> int:
     '''main function'''
     # open and read the file
+    file_path: str = ""
     if len(sys.argv) > 1:
-        file_path: str = sys.argv[1]
+        file_path = sys.argv[1]
     else:
-        file_path: str = input("enter the path of the file you want to organize: ")
+        file_path = input("enter the path of the file you want to organize: ")
     if not check_file_validity(file_path):
         return 1
 
@@ -93,7 +94,7 @@ def main() -> int:
     for song_line in song_lines:
         split_line: list[str] = [piece.strip() for piece in song_line.split("/")]
         song_name: str = split_line[0].strip()
-        playlist_line: list[str] = [playlist_name.strip() for playlist_name in split_line[1].split()]
+        playlist_line: list[str] = [playlist_name.strip() for playlist_name in split_line[1].split(",")]
         for playlist in playlist_line:
             if playlist != "!songs":
                 if playlist not in song_assignments:
@@ -109,16 +110,19 @@ def main() -> int:
                 spotify.create_playlist(playlist)
             else:
                 while playlist not in spotify.playlists:
-                    match input(f"playlist {playlist} does not exist and is not marked to be created. do you want to create it, skip it, or change that playlist to another playlist? (1, 2, 3)"):
-                        case 1:
+                    match input(f"playlist {playlist} does not exist and is not marked to be created. do you want to create it, skip it, or change that playlist to another playlist? (1, 2, 3): ").strip():
+                        case "1":
                             playlist_data: dict[str, str] = spotify.create_playlist(playlist)
                             spotify.playlists.update(playlist_data)
                             break
-                        case 2:
-                            continue
-                        case 3:
+                        case "2":
+                            continue # TODO: update this so it actually skips the playlist
+                        case "3":
                             playlist = input("enter the name of the changed playlist: ")
-        elif playlist in spotify.playlists:
+                        case _:
+                            print("unknown input, please try again")
+                            continue
+        if playlist in spotify.playlists:
             track_uris: list[str] = []
             for track in songs:
                 search_result: str | None = spotify.search(track, "track")
